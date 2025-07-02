@@ -1,9 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const cors = require('cors');
 const connectDB = require('./config/db');
 const contactRoutes = require('./routes/contactRoutes');
 const errorHandler = require('./middlewares/errorHandler');
@@ -13,28 +12,32 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Security and logging
+// Middleware
 app.use(helmet());
 app.use(morgan('dev'));
-
-// JSON body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ CORS setup for multiple frontend ports (5173 for Vite, 3000 for CRA)
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+// CORS config
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://saranyadevi-portfolio-six.vercel.app',
+  'https://localhost:5173'
+
+];
 
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`Origin '${origin}' not allowed by CORS`));
     }
   },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
 }));
 
 // Routes
@@ -48,12 +51,12 @@ app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const server = app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
 
-// Handle unhandled rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`);
+// Graceful shutdown
+process.on('unhandledRejection', (err) => {
+  console.error(`Unhandled Error: ${err.message}`);
   server.close(() => process.exit(1));
 });

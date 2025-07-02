@@ -1,12 +1,8 @@
 const express = require('express');
-const { 
-  sendContact,
-  getContacts 
-} = require('../controllers/contactController');
-
 const router = express.Router();
+const { sendContact, getContacts } = require('../controllers/contactController');
 
 router.post('/', sendContact);
-router.get('/', getContacts); // For admin panel (you can add auth later)
+router.get('/', getContacts); // Optionally protect with admin auth
 
 module.exports = router;
